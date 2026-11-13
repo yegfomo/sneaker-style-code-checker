@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Sneaker Style Code Checker",
+  "version": "1.0.0",
+  "description": "Extract and compare Nike-style sneaker codes from two listings, with an offline reference for six Jordan releases.",
+  "action": {
+    "default_title": "Compare sneaker style codes",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png"
+    }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}

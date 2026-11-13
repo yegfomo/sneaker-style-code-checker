@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sneaker Style Code Checker</title>
+  <style>
+:root {
+  color-scheme: light;
+  font: 14px/1.5 Inter, system-ui, sans-serif;
+  color: #142b29;
+  background: #ecf1eb;
+}
+* { box-sizing: border-box; }
+body { width: 460px; margin: 0; }
+main { padding: 22px; }
+h1 { font-size: 23px; line-height: 1.15; margin: 0; letter-spacing: -.035em; }
+header p { color: #425651; margin: 8px 0 18px; }
+.inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label { display: grid; gap: 5px; font-weight: 650; }
+.optional { color: #425651; font-weight: 400; }
+textarea {
+  min-width: 0;
+  width: 100%;
+  padding: 9px;
+  resize: vertical;
+  font: inherit;
+  font-weight: 400;
+  border: 1px solid #92a69e;
+  border-radius: 8px;
+  color: inherit;
+  background: #fff;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+button {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  color: inherit;
+  border: 1px solid #92a69e;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+}
+button[type="submit"] { background: #184c41; border-color: #184c41; color: #fff; }
+:focus-visible { outline: 2px solid #205caa; outline-offset: 3px; }
+#results { margin-top: 16px; padding: 12px; border: 1px solid #a3b3a8; border-radius: 10px; background: #f9fcf8; }
+h2 { font-size: 16px; margin: 0; }
+#status { margin: 4px 0; }
+#matches { list-style: none; margin: 0; padding: 0; }
+#matches li { border-top: 1px solid #d6e1d8; margin-top: 8px; padding-top: 8px; }
+#matches li p { margin: 2px 0; }
+.note { color: #425651; font-size: 12px; margin: 14px 0 8px; }
+footer { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; }
+a { color: #185b48; text-underline-offset: 2px; }
+@media (min-width: 560px) {
+  body { width: auto; }
+  main { width: min(560px, calc(100% - 48px)); margin: 36px auto; background: #fff; border-radius: 14px; }
+}
+@media (max-width: 459px) {
+  body { width: auto; min-width: 260px; }
+  .inputs { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Sneaker Style Code Checker</h1>
+      <p>Paste a style code or listing text to see which full codes match.</p>
+    </header>
+    <form id="compare-form">
+      <div class="inputs">
+        <label><span class="label-text">First listing</span>
+          <textarea id="first" rows="3" maxlength="20000" placeholder="e.g. Jordan 11 Gamma CT8012-047" spellcheck="false"></textarea>
+        </label>
+        <label><span class="label-text">Second listing <span class="optional">(optional)</span></span>
+          <textarea id="second" rows="3" maxlength="20000" placeholder="e.g. Jordan 11 Gamma 378038-047" spellcheck="false"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit">Check style codes</button>
+        <button type="button" id="example">Try an example</button>
+        <button type="reset">Clear</button>
+      </div>
+    </form>
+    <section id="results" aria-labelledby="result-title" hidden>
+      <h2 id="result-title">Results</h2>
+      <p id="status" role="status"></p>
+      <ul id="matches"></ul>
+    </section>
+    <p class="note">A style code helps identify a release. Authenticating an individual pair requires other evidence.</p>
+    <footer>
+      <a href="https://yegking.net/2026/11/12/sneaker-style-code-reference/" target="_blank" rel="noopener noreferrer">YegKing source data</a>
+      <a href="https://reps.shoes/2026/11/06/travis-scott-jordan-1-low-shy-pink-vs-tropical-pink/" target="_blank" rel="noopener noreferrer">Reps Shoes colorway comparison</a>
+      <p>Project maintained by the team behind YegKing and Reps Shoes.</p>
+    </footer>
+  </main>
+  <script>
+const styleCodePattern = /(?<![\p{L}\p{N}])(?:[A-Z]{2}\d{4}|\d{6})[ \t]*[-\u2010-\u2015\u2212][ \t]*\d{3}(?![\p{L}\p{N}])/gu;
+
+function extractCodes(input) {
+  const candidates = input.toUpperCase().match(styleCodePattern) ?? [];
+  return [...new Set(candidates.map(code => code.replace(/[ \t]*[-\u2010-\u2015\u2212][ \t]*/, "-")))];
+}
+
+function compareListings(firstText, secondText) {
+  const firstCodes = new Set(extractCodes(firstText));
+  const secondCodes = new Set(extractCodes(secondText));
+  return [...new Set([...firstCodes, ...secondCodes])].map(code => ({
+    code,
+    inFirst: firstCodes.has(code),
+    inSecond: secondCodes.has(code)
+  }));
+}
+
+
+const releases = {
+  "CT8012-047": {
+    "name": "Air Jordan 11 Gamma (2025)",
+    "size": "Adult",
+    "source": "https://www.nike.com/au/launch/t/ho25-ct8012-047-air-jordan-11-retro-astla"
+  },
+  "378038-047": {
+    "name": "Air Jordan 11 Gamma (2025)",
+    "size": "Big Kids",
+    "source": "https://www.nike.com/au/launch/t/378038-047-big-kids-air-jordan-11-gamma-astla"
+  },
+  "FQ8138-600": {
+    "name": "Air Jordan 4 Toro Bravo (2026)",
+    "size": "Adult",
+    "source": "https://www.nike.com/au/launch/t/su26-fq8138-600-air-jordan-4-retro-astla"
+  },
+  "FQ8213-600": {
+    "name": "Air Jordan 4 Toro (2026)",
+    "size": "Big Kids",
+    "source": "https://www.nike.com/us/es/t/tenis-para-ninos-grandes-air-jordan-4-toro-Aey77D4l/FQ8213-600"
+  },
+  "IQ7604-100": {
+    "name": "Air Jordan 1 Low x Travis Scott Muslin and Shy Pink (2026)",
+    "size": "Adult",
+    "source": "https://www.nike.com/au/launch/t/su26-iq7604-100-air-jordan-1-low-og-sp-astla"
+  },
+  "IQ7604-101": {
+    "name": "Air Jordan 1 Low x Travis Scott Shy Pink and Tropical Pink (2026)",
+    "size": "Adult",
+    "source": "https://www.nike.com/ca/launch/t/air-jordan-1-low-travis-scott-shy-pink-and-tropical-pink"
+  }
+};
+
+
+
+const form = document.querySelector("#compare-form");
+const first = document.querySelector("#first");
+const second = document.querySelector("#second");
+const results = document.querySelector("#results");
+const status = document.querySelector("#status");
+const matches = document.querySelector("#matches");
+
+function renderMatches(event) {
+  event.preventDefault();
+  const codes = compareListings(first.value, second.value);
+  const shared = codes.filter(item => item.inFirst && item.inSecond).length;
+  const isComparison = Boolean(first.value.trim() && second.value.trim());
+
+  matches.replaceChildren();
+  results.hidden = false;
+
+  if (codes.length === 0) {
+    status.textContent = "No complete style code found. Try a code such as CT8012-047.";
+    return;
+  }
+
+  if (isComparison) {
+    const bothHaveCodes = codes.some(item => item.inFirst) && codes.some(item => item.inSecond);
+    status.textContent = bothHaveCodes
+      ? (shared ? `${shared} exact style code${shared === 1 ? "" : "s"} shared.` : "The listings share no exact style codes.")
+      : "Only one listing contains a complete style code.";
+  } else {
+    status.textContent = `${codes.length} style code${codes.length === 1 ? "" : "s"} found.`;
+  }
+
+  for (const item of codes) {
+    const row = document.createElement("li");
+    const code = document.createElement("strong");
+    const location = item.inFirst && item.inSecond ? "Both listings" : item.inFirst ? "First listing" : "Second listing";
+    code.textContent = item.code;
+    row.append(code, ` · ${location}`);
+
+    const detail = document.createElement("p");
+    const record = releases[item.code];
+    if (record) {
+      const source = document.createElement("a");
+      source.href = record.source;
+      source.target = "_blank";
+      source.rel = "noopener noreferrer";
+      source.textContent = "Nike record";
+      detail.append(`${record.name} · ${record.size} · `, source);
+    } else {
+      detail.textContent = "Outside the six-release reference. Check the full code with the manufacturer.";
+    }
+    row.append(detail);
+    matches.append(row);
+  }
+}
+
+form.addEventListener("submit", renderMatches);
+form.addEventListener("reset", () => {
+  matches.replaceChildren();
+  status.textContent = "";
+  results.hidden = true;
+});
+
+document.querySelector("#example").addEventListener("click", () => {
+  first.value = "Air Jordan 11 Gamma, adult · CT8012-047";
+  second.value = "Air Jordan 11 Gamma, Big Kids · 378038-047";
+  form.requestSubmit();
+});
+</script>
+</body>
+</html>
